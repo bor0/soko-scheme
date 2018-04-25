@@ -11,7 +11,7 @@ Work timeline (2-3 hours a day):
 - Day 1: Implement logic (`game.rkt` and `level.rkt`).
 - Day 2: Initial implementation for `soko_ui.rkt`.
 - Day 3: Finish implementation for `soko_ui.rkt`.
-- Day 4: Integrate all the parts together.
+- Day 4: Integrate all the parts together and do rounds of testing.
 - Day 5: Refactor/beautify code, fix allthebugs.
 
 Credits: Spotz (music).
