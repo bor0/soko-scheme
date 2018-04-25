@@ -8,13 +8,7 @@
 (define asset-width 30)
 (define asset-height 30)
 (define soko-map null)
-
-(define (main-draw file)
-  (if file
-      (begin
-        (set! soko-map (read-level file))
-        (run))
-      #f))
+(define moves 0)
 
 (define soko-bitmaps
   (list
@@ -27,17 +21,28 @@
    (list 'LEVEL_SOKOBAN (read-bitmap "./gfx/sokoban.png"))
    (list 'LEVEL_SOKOBAN_BEACON (read-bitmap "./gfx/sokoban.png"))))
 
+; Entry point for the game
+(define (main-draw file)
+  (if file
+      (begin
+        (set! soko-map (read-level file))
+        (run))
+      #f))
+
+; Get a soko bitmap for specific asset (e.g. 'LEVEL_SOKOBAN)
 (define (get-soko-bitmap asset)
   (let ([bitmap (findf (lambda (x) (eq? (car x) asset)) soko-bitmaps)])
     (if bitmap (cadr bitmap) (cadar soko-bitmaps))))
 
+; Draw the Soko level to the dc, by using bitmap for each asset
 (define (draw-map canvas dc)
   (if (check-win? soko-map)
-      (send dc draw-text "You Won!" 0 0)
+      (send dc draw-text (format "You Won in ~a moves!" moves) 0 0)
       (for* ([i (length (car soko-map))]
              [j (length soko-map)])
         (send dc draw-bitmap (get-soko-bitmap (get-soko-map-value soko-map (posn i j))) (* i asset-width) (* j asset-height)))))
 
+; Teleport functionality where we can move the position of the Soko to any terrain
 (define (teleport x y)
   (letrec ([soko-pos (get-soko-position soko-map)]
         [soko-type (get-soko-map-value soko-map soko-pos)]
@@ -48,6 +53,7 @@
         (set! soko-map (set-soko-map-value removed-soko-map newpos 'LEVEL_SOKOBAN))
         soko-map)))
 
+; Music thread keeps running itself
 (define (music-thread)
   (play-sound "./music/untzuntz.mp3" #f)
   (music-thread))
@@ -72,10 +78,12 @@
     ; Define overriding method to handle keyboard events
     (define/override (on-char event)
       (let ([keycode (send event get-key-code)])
+        (set! moves (+ moves 1))
         (cond ((eq? keycode #\w) (set! soko-map (play soko-map 'UP)))
               ((eq? keycode #\a) (set! soko-map (play soko-map 'LEFT)))
               ((eq? keycode #\s) (set! soko-map (play soko-map 'DOWN)))
-              ((eq? keycode #\d) (set! soko-map (play soko-map 'RIGHT))))
+              ((eq? keycode #\d) (set! soko-map (play soko-map 'RIGHT)))
+              (else (set! moves (- moves 1))))
         (send this refresh-now)))
     ; Call the superclass init, passing on all init args
     (super-new)))

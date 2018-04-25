@@ -1,34 +1,6 @@
 #lang racket
 (define-struct posn (x y))
 
-(define soko-enums
-  '((0 LEVEL_EMPTY)
-    (1 LEVEL_WALL)
-    (2 LEVEL_TERRAIN)
-    (3 LEVEL_BOX)
-    (4 LEVEL_BEACON)
-    (5 LEVEL_BOX_BEACON)
-    (6 LEVEL_SOKOBAN)
-    (7 LEVEL_SOKOBAN_BEACON)))
-
-; Define map for matrices
-(define (map-soko-map f soko-map)
-  (map (lambda (x) (map f x)) soko-map))
-
-; Convert a matrix to a soko map using soko-enums
-(define (convert-to-soko-map matrix)
-  (map-soko-map
-   (lambda (x)
-     (let ([found-val (findf (lambda (y) (= (car y) x)) soko-enums)])
-       (if (pair? found-val) (cadr found-val) 'LEVEL_TERRAIN)))
-   matrix))
-
-; Convert a soko-map to a matrix using soko-enums
-(define (convert-to-matrix soko-map)
-  (map-soko-map
-   (lambda (x)
-     (car (findf (lambda (y) (eq? (cadr y) x)) soko-enums))) soko-map))
-
 ; Bounds checker
 (define (bad-bounds? soko-map pos) (or (>= (posn-x pos) (length (car soko-map)))
                                        (>= (posn-y pos) (length soko-map))
@@ -122,4 +94,4 @@
    (not (member 'LEVEL_BEACON (flatten soko-map)))
    (not (member 'LEVEL_SOKOBAN_BEACON (flatten soko-map)))))
 
-(provide play posn posn-x posn-y set-soko-map-value get-soko-position get-soko-map-value convert-to-soko-map convert-to-matrix check-win?)
+(provide play posn posn-x posn-y set-soko-map-value get-soko-position get-soko-map-value check-win?)
