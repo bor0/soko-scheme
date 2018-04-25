@@ -38,9 +38,37 @@
              [j (length soko-map)])
         (send dc draw-bitmap (get-soko-bitmap (get-soko-map-value soko-map (posn i j))) (* i asset-width) (* j asset-height)))))
 
+(define (teleport x y)
+  (letrec ([soko-pos (get-soko-position soko-map)]
+        [soko-type (get-soko-map-value soko-map soko-pos)]
+        [newpos (posn (floor (/ x asset-width)) (floor (/ y asset-height)))]
+        [removed-soko-map (set-soko-map-value soko-map soko-pos
+                                              (if (eq? soko-type 'LEVEL_SOKOBAN_BEACON) 'LEVEL_BEACON 'LEVEL_TERRAIN))])
+    (if (member (get-soko-map-value soko-map newpos) '(LEVEL_TERRAIN))
+        (set! soko-map (set-soko-map-value removed-soko-map newpos 'LEVEL_SOKOBAN))
+        soko-map)))
+
+(define (music-thread)
+  (play-sound "./music/untzuntz.mp3" #f)
+  (music-thread))
+
+; Derive a new frame class to handle events
+(define my-frame%
+ (class frame%
+   (define music-thread-id (thread music-thread))
+   ; Close music thread on exit
+   (define/override (on-exit)
+     (kill-thread music-thread-id))
+   (super-new)))
+
 ; Derive a new canvas (a drawing window) class to handle events
 (define my-canvas%
   (class canvas% ; The base class is canvas%
+    ; Define overriding method to handle mouse events
+    (define/override (on-event event)
+      (let ([keycode (send event get-shift-down)])
+        (if keycode (teleport (send event get-x)
+                              (send event get-y)) #f)))
     ; Define overriding method to handle keyboard events
     (define/override (on-char event)
       (let ([keycode (send event get-key-code)])
@@ -54,7 +82,7 @@
 
 (define (run)
   ; Make a frame by instantiating the frame% class
-  (letrec ([frame (new frame% [label "Sokoban v1.0 by Boro Sitnikovski"]
+  (letrec ([frame (new my-frame% [label "Sokoban v1.0 by Boro Sitnikovski"]
                        [width (* asset-width (length (car soko-map)))] [height (+ 50 (* asset-height (length soko-map)))])])
            ; Show the frame by calling its show method
            (new my-canvas% [parent frame] [paint-callback draw-map])
