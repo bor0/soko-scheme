@@ -87,13 +87,14 @@
     ; Define overriding method to handle keyboard events
     (define/override (on-char event)
       (let ([keycode (send event get-key-code)])
-        (set! moves (+ moves 1))
-        (cond ((key? 'up keycode) (set! soko-map (play soko-map 'UP)))
-              ((key? 'left keycode) (set! soko-map (play soko-map 'LEFT)))
-              ((key? 'down keycode) (set! soko-map (play soko-map 'DOWN)))
-              ((key? 'right keycode) (set! soko-map (play soko-map 'RIGHT)))
-              (else (set! moves (- moves 1))))
-        (send this refresh-now)))
+        (unless (check-win? soko-map)
+          (set! moves (+ moves 1))
+          (cond ((key? 'up keycode) (set! soko-map (play soko-map 'UP)))
+                ((key? 'left keycode) (set! soko-map (play soko-map 'LEFT)))
+                ((key? 'down keycode) (set! soko-map (play soko-map 'DOWN)))
+                ((key? 'right keycode) (set! soko-map (play soko-map 'RIGHT)))
+                (else (set! moves (- moves 1))))
+          (send this refresh-now))))
     ; Call the superclass init, passing on all init args
     (super-new)))
 
