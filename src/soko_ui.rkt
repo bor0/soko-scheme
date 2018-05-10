@@ -67,6 +67,15 @@
      (kill-thread music-thread-id))
    (super-new)))
 
+(define (key? sort keycode)
+  (or (eq? sort keycode)
+      (case sort
+        ((up) (eq? keycode #\w))
+        ((left) (eq? keycode #\a))
+        ((down) (eq? keycode #\s))
+        ((right) (eq? keycode #\d))
+        (else #f))))
+
 ; Derive a new canvas (a drawing window) class to handle events
 (define my-canvas%
   (class canvas% ; The base class is canvas%
@@ -79,10 +88,10 @@
     (define/override (on-char event)
       (let ([keycode (send event get-key-code)])
         (set! moves (+ moves 1))
-        (cond ((eq? keycode #\w) (set! soko-map (play soko-map 'UP)))
-              ((eq? keycode #\a) (set! soko-map (play soko-map 'LEFT)))
-              ((eq? keycode #\s) (set! soko-map (play soko-map 'DOWN)))
-              ((eq? keycode #\d) (set! soko-map (play soko-map 'RIGHT)))
+        (cond ((key? 'up keycode) (set! soko-map (play soko-map 'UP)))
+              ((key? 'left keycode) (set! soko-map (play soko-map 'LEFT)))
+              ((key? 'down keycode) (set! soko-map (play soko-map 'DOWN)))
+              ((key? 'right keycode) (set! soko-map (play soko-map 'RIGHT)))
               (else (set! moves (- moves 1))))
         (send this refresh-now)))
     ; Call the superclass init, passing on all init args
